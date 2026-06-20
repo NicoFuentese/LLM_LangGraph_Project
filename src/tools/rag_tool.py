@@ -12,10 +12,11 @@ def _norm(texto: str) -> str:
 def buscar_en_kb(consulta: str) -> List[Dict]:
     """
     Busca en la KB cargada (original o fusionada).
-    Prioridad: 1) coincidencia en clave, 2) keywords en texto con sinónimos.
+    Prioridad: 1) Mayor relevancia (cantidad de palabras coincidentes), 2) Tipo de documento.
     """
     consulta_norm = _norm(consulta)
-    palabras = set(re.findall(r"\b\w{4,}\b", consulta_norm))
+    # Cambiado a w{3,} para capturar acrónimos como 'ici', 'inf', 'sct'
+    palabras = set(re.findall(r"\b\w{3,}\b", consulta_norm))
 
     # Expandir sinónimos comunes para mejorar recall
     sinonimos = {
@@ -39,7 +40,7 @@ def buscar_en_kb(consulta: str) -> List[Dict]:
     # 1) Coincidencia por clave (exacta o parcial)
     for clave, articulo in KNOWLEDGE_BASE.items():
         clave_norm = _norm(clave.replace("_", " "))
-        # Si la consulta no generó palabras clave de más de 4 letras, intentar coincidencia directa en clave
+        # Si la consulta no generó palabras clave de más de 3 letras, intentar coincidencia directa en clave
         if not palabras_expandidas:
             if consulta_norm in clave_norm or clave_norm in consulta_norm:
                 if clave not in vistos:
@@ -59,16 +60,30 @@ def buscar_en_kb(consulta: str) -> List[Dict]:
             resultados.append({"clave": clave, **articulo})
             vistos.add(clave)
 
-    # Ordenar: originales primero, luego calendario, luego reglamentos
-    def prioridad(r):
+    # Ordenar por relevancia (coincidencia de palabras) y luego por tipo de documento
+    def relevancia_y_prioridad(r):
+        clave_norm = _norm(r["clave"].replace("_", " "))
+        texto_norm = _norm(r.get("texto", ""))
+        
+        # Contar cuántas palabras clave coinciden con la clave o el texto del artículo
+        matches_clave = sum(1 for p in palabras_expandidas if p in clave_norm)
+        matches_texto = sum(1 for p in palabras_expandidas if p in texto_norm)
+        
+        # Damos triple peso a las coincidencias en la clave del artículo
+        score = (matches_clave * 3) + matches_texto
+        
+        # Tie-breaker de prioridad original
         c = r["clave"]
         if c in KB_ORIGINAL:
-            return 0
-        if "calendario" in c:
-            return 1
-        return 2
+            doc_type = 0
+        elif "calendario" in c:
+            doc_type = 1
+        else:
+            doc_type = 2
+            
+        return (-score, doc_type)
 
-    resultados.sort(key=prioridad)
+    resultados.sort(key=relevancia_y_prioridad)
     return resultados
 
 @tool
