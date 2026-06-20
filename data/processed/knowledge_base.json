@@ -1,0 +1,65 @@
+{
+  "convalidacion": {
+    "texto": "El proceso de convalidación permite reconocer asignaturas cursadas en otras instituciones de educación superior nacionales o extranjeras, siempre que el contenido y los créditos sean equivalentes a los exigidos en los planes de estudio de la PUCV. El estudiante debe presentar una solicitud formal ante la Secretaría Académica adjuntando programas de las asignaturas, certificados de notas y resolución del director de carrera. La comisión evaluadora tiene un plazo de 30 días hábiles para emitir resolución.",
+    "articulo": "Artículo 20",
+    "seccion": "Procedimientos Académicos",
+    "pagina": 12,
+    "documento": "Reglamento de Estudios de Pregrado PUCV",
+    "url": "https://www.pucv.cl/uuaa/site/docs/20180703/20180703092942/reglamento_estudios_pregrado.pdf",
+    "vigente": true
+  },
+  "titulacion": {
+    "texto": "Para optar al título profesional, el estudiante debe haber aprobado la totalidad de las asignaturas del plan de estudios, cumplir con los créditos mínimos establecidos y no registrar deudas con la institución. El proceso de titulación contempla la elaboración y defensa de una memoria, proyecto o examen de título según lo establezca cada carrera. El plazo máximo para titularse una vez aprobadas todas las asignaturas es de dos años calendario.",
+    "articulo": "Artículo 45",
+    "seccion": "Proceso de Titulación",
+    "pagina": 28,
+    "documento": "Reglamento de Estudios de Pregrado PUCV",
+    "url": "https://www.pucv.cl/uuaa/site/docs/20180703/20180703092942/reglamento_estudios_pregrado.pdf",
+    "vigente": true
+  },
+  "creditos": {
+    "texto": "El sistema de créditos de la PUCV sigue el estándar SCT-Chile (Sistema de Créditos Transferibles). Un crédito SCT equivale a 27 horas de trabajo estudiantil total, incluyendo clases presenciales, estudio autónomo y actividades prácticas. El plan de estudios de cada carrera especifica el total de créditos requeridos para la graduación, típicamente entre 240 y 300 créditos SCT para una carrera de cuatro a cinco años.",
+    "articulo": "Artículo 10",
+    "seccion": "Sistema de Créditos",
+    "pagina": 6,
+    "documento": "Reglamento de Estudios de Pregrado PUCV",
+    "url": "https://www.pucv.cl/uuaa/site/docs/20180703/20180703092942/reglamento_estudios_pregrado.pdf",
+    "vigente": true
+  },
+  "requisitos": {
+    "texto": "Los requisitos de las asignaturas pueden ser de dos tipos: prerrequisitos (asignaturas que deben aprobarse antes) y correquisitos (asignaturas que deben cursarse en paralelo). Un estudiante no puede inscribir una asignatura si no cumple con sus prerrequisitos, salvo autorización expresa del director de carrera. Los requisitos de cada asignatura están detallados en el plan de estudios oficial publicado en la plataforma digital de la Universidad.",
+    "articulo": "Artículo 15",
+    "seccion": "Inscripción de Asignaturas",
+    "pagina": 9,
+    "documento": "Reglamento de Estudios de Pregrado PUCV",
+    "url": "https://www.pucv.cl/uuaa/site/docs/20180703/20180703092942/reglamento_estudios_pregrado.pdf",
+    "vigente": true
+  },
+  "fechas_academicas": {
+    "texto": "El año académico se divide en dos semestres regulares. El primer semestre se extiende aproximadamente de marzo a julio, y el segundo semestre de agosto a diciembre. El período de inscripción de asignaturas se realiza durante las dos semanas previas al inicio de cada semestre. Los exámenes finales se realizan en enero (primer semestre) y en diciembre-enero (segundo semestre). Las fechas exactas son publicadas anualmente por la Dirección de Docencia.",
+    "articulo": "Artículo 5",
+    "seccion": "Calendario Académico",
+    "pagina": 3,
+    "documento": "Reglamento de Estudios de Pregrado PUCV",
+    "url": "https://www.pucv.cl/uuaa/site/docs/20180703/20180703092942/reglamento_estudios_pregrado.pdf",
+    "vigente": true
+  },
+  "secretaria_academica": {
+    "texto": "La Secretaría Académica es la unidad encargada de gestionar los trámites administrativos de los estudiantes de pregrado: inscripción y retiro de asignaturas, solicitudes de convalidación, certificados de alumno regular, cambios de carrera, retiros temporales y permanentes. El horario de atención es de lunes a viernes de 9:00 a 13:00 horas y de 15:00 a 17:00 horas. Los trámites también pueden iniciarse a través del Portal del Estudiante.",
+    "articulo": "Artículo 3",
+    "seccion": "Estructura Administrativa",
+    "pagina": 2,
+    "documento": "Reglamento de Estudios de Pregrado PUCV",
+    "url": "https://www.pucv.cl/secretaria-academica",
+    "vigente": true
+  },
+  "evaluacion": {
+    "texto": "Las asignaturas se evalúan mediante pruebas parciales, controles, trabajos, informes y un examen final, cuya ponderación es definida por el docente al inicio del semestre en el programa de la asignatura. La nota mínima de aprobación es 4.0 en escala de 1.0 a 7.0. Para eximirse del examen final, el estudiante debe obtener una nota de presentación igual o superior a 5.5. Quien reprueba una asignatura por segunda vez pierde el beneficio de la beca de arancel si la posee.",
+    "articulo": "Artículo 25",
+    "seccion": "Sistema de Evaluación",
+    "pagina": 15,
+    "documento": "Reglamento de Estudios de Pregrado PUCV",
+    "url": "https://www.pucv.cl/uuaa/site/docs/20180703/20180703092942/reglamento_estudios_pregrado.pdf",
+    "vigente": true
+  }
+}
