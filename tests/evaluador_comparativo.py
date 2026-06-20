@@ -3,7 +3,11 @@ import sys
 import time
 import json
 import re
+from pathlib import Path
 from typing import Dict, List, Any
+
+# Agregar el directorio raíz al path de Python para resolver importaciones
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 # Reconfigurar salida estándar para UTF-8 en entornos Windows
 if sys.platform.startswith("win"):
@@ -18,7 +22,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from config.settings import GOOGLE_API_KEY, JUDGE_MODEL
 from src.state import EstadoChatbot
 from src.graph import construir_grafo
-from baseline_rag import ejecutar_baseline
+from tests.baseline_rag import ejecutar_baseline
 
 # Inicializar modelo específico para el Juez (temperatura 0.0 para consistencia)
 judge_llm = ChatGoogleGenerativeAI(
@@ -27,7 +31,7 @@ judge_llm = ChatGoogleGenerativeAI(
     temperature=0.0,
 )
 
-# 1. Definición del set de pruebas
+# Definición del set de pruebas
 TEST_CASES = [
     {
         "id": 1,
@@ -224,14 +228,18 @@ def ejecutar_evaluacion():
         print(f"  • Baseline: Latencia={latency_A:.2f}s | LLM Calls={calls_A} | Factualidad={eval_juez.get('factualidad_A')} | Completitud={eval_juez.get('completitud_A')}")
         print(f"  • Agente:   Latencia={latency_B:.2f}s | LLM Calls={calls_B} | Factualidad={eval_juez.get('factualidad_B')} | Completitud={eval_juez.get('completitud_B')}\n")
 
-        # Delay adicional para dar respiro a las cuotas por minuto al final del ciclo
+        # Delay adicional al final de cada caso de prueba
         time.sleep(5)
 
-    # Generar Reporte Final
+    # Generar Reporte Final en carpeta output
     generar_reporte(resultados_evaluacion)
 
 def generar_reporte(resultados: List[Dict[str, Any]]):
-    reporte_path = "evaluacion_resultados.md"
+    # Crear la carpeta output si no existe en la raíz
+    root_dir = Path(__file__).resolve().parent.parent
+    output_dir = root_dir / "output"
+    output_dir.mkdir(exist_ok=True)
+    reporte_path = output_dir / "evaluacion_resultados.md"
     
     # Calcular promedios
     total_lat_A = sum(r["baseline"]["latencia"] for r in resultados)
