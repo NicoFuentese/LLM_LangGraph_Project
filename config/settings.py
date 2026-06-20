@@ -17,6 +17,9 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 # Modelo de Gemini a utilizar (por defecto gemini-2.5-flash)
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash").strip()
 
+# Modelo del Juez Evaluador (por defecto gemini-3.5-flash)
+JUDGE_MODEL = os.getenv("JUDGE_MODEL", "gemini-3.5-flash").strip()
+
 # Tipo de base de conocimiento (standard | extended)
 KB_TYPE = os.getenv("KB_TYPE", "extended").strip().lower()
 

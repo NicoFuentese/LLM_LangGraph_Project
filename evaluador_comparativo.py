@@ -14,10 +14,18 @@ if sys.platform.startswith("win"):
          sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
          sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-from src.llm import llm
+from langchain_google_genai import ChatGoogleGenerativeAI
+from config.settings import GOOGLE_API_KEY, JUDGE_MODEL
 from src.state import EstadoChatbot
 from src.graph import construir_grafo
 from baseline_rag import ejecutar_baseline
+
+# Inicializar modelo específico para el Juez (temperatura 0.0 para consistencia)
+judge_llm = ChatGoogleGenerativeAI(
+    model=JUDGE_MODEL,
+    google_api_key=GOOGLE_API_KEY,
+    temperature=0.0,
+)
 
 # 1. Definición del set de pruebas
 TEST_CASES = [
@@ -71,7 +79,7 @@ def _get_text(respuesta) -> str:
     return str(content)
 
 def juzgar_respuestas(consulta: str, contexto: str, respuesta_A: str, respuesta_B: str) -> Dict[str, Any]:
-    """Usa un LLM Juez para evaluar cualitativamente las respuestas A (Baseline) y B (Multiagente)."""
+    """Usa el LLM Juez configurado en .env para evaluar las respuestas A (Baseline) y B (Multiagente)."""
     prompt = f"""Eres un auditor experto de sistemas RAG y agentes conversacionales aplicados a reglamentos universitarios.
 Evalúa y califica dos respuestas generadas para la consulta de un estudiante de la PUCV utilizando el contexto oficial proporcionado.
 
@@ -96,6 +104,10 @@ Instrucciones de calificación:
 1. Factualidad (Factual Accuracy): Califica de 1 a 5 (5 = perfecto). Penaliza alucinaciones, datos inventados (artículos incorrectos, plazos ficticios) o contradicciones con el contexto de referencia.
 2. Completitud (Recall): Califica de 1 a 5 (5 = perfecto). Verifica si se responden todas las capas y detalles de la consulta original, especialmente para preguntas multicapa.
 
+Regla Crítica: Si la respuesta indica claramente que la consulta está fuera de alcance o que no hay información suficiente en el contexto para responder, su Factualidad debe ser calificada automáticamente con un 5, ya que evitar la alucinación es el comportamiento correcto.
+
+Nota sobre Fuentes y Citas: La Respuesta B (Multiagente) incluye una sección de 'Fuentes' con números de artículos, secciones y páginas que provienen de los metadatos reales cargados en la base de datos (no visibles directamente en el texto bruto del contexto). No consideres estas referencias estructuradas de fuentes como alucinaciones si la información descrita coincide con el contexto oficial.
+
 Responde ÚNICAMENTE con un JSON válido de la siguiente estructura (sin markdown ni explicaciones adicionales):
 {{
   "factualidad_A": 1-5,
@@ -105,7 +117,7 @@ Responde ÚNICAMENTE con un JSON válido de la siguiente estructura (sin markdow
   "comparativa_analisis": "Breve explicación analítica de las diferencias"
 }}"""
     try:
-        respuesta = llm.invoke(prompt)
+        respuesta = judge_llm.invoke(prompt)
         content_str = _get_text(respuesta)
         limpio = re.sub(r"```json\s*|\s*```", "", content_str.strip()).strip()
         return json.loads(limpio)
@@ -120,8 +132,8 @@ Responde ÚNICAMENTE con un JSON válido de la siguiente estructura (sin markdow
         }
 
 def ejecutar_evaluacion():
-    print("Iniciando la suite de evaluación comparativa...")
-    print("Esto puede tardar unos minutos debido a las llamadas sucesivas al LLM y al Grafo.\n")
+    print(f"Iniciando la suite de evaluación comparativa...")
+    print(f"Utilizando como juez el modelo: '{JUDGE_MODEL}'\n")
 
     app = construir_grafo()
     resultados_evaluacion = []
@@ -134,6 +146,9 @@ def ejecutar_evaluacion():
         respuesta_A = ejecutar_baseline(case["query"])
         latency_A = time.time() - start_time
         calls_A = 1  
+        
+        # Delay de protección contra límites de cuota por minuto (RPM)
+        time.sleep(3)
         
         # --- SISTEMA B: MULTIAGENTE LANGGRAPH ---
         start_time = time.time()
@@ -175,6 +190,9 @@ def ejecutar_evaluacion():
             
         latency_B = time.time() - start_time
 
+        # Delay de protección contra límites de cuota por minuto (RPM)
+        time.sleep(3)
+
         # Contexto unificado recuperado para que el juez evalúe
         contexto_juez = "\n\n".join(estado_acumulado.get("chunks_recuperados", []))
         if not contexto_juez:
@@ -206,6 +224,9 @@ def ejecutar_evaluacion():
         print(f"  • Baseline: Latencia={latency_A:.2f}s | LLM Calls={calls_A} | Factualidad={eval_juez.get('factualidad_A')} | Completitud={eval_juez.get('completitud_A')}")
         print(f"  • Agente:   Latencia={latency_B:.2f}s | LLM Calls={calls_B} | Factualidad={eval_juez.get('factualidad_B')} | Completitud={eval_juez.get('completitud_B')}\n")
 
+        # Delay adicional para dar respiro a las cuotas por minuto al final del ciclo
+        time.sleep(5)
+
     # Generar Reporte Final
     generar_reporte(resultados_evaluacion)
 
@@ -236,8 +257,8 @@ def generar_reporte(resultados: List[Dict[str, Any]]):
         f.write("## 1. Resumen de Métricas Promedio\n\n")
         f.write("| Métrica / Sistema | RAG Tradicional (Baseline) | Sistema Multiagente (LangGraph) | Delta (Mejora / Costo) |\n")
         f.write("|---|---|---|---|\n")
-        f.write(f"| **Factualidad (Calidad/1-5)** | {avg_fact_A:.2f} / 5.0 | {avg_fact_B:.2f} / 5.0 | **+{avg_fact_B - avg_fact_A:+.2f} pts** |\n")
-        f.write(f"| **Completitud (Recall/1-5)** | {avg_comp_A:.2f} / 5.0 | {avg_comp_B:.2f} / 5.0 | **+{avg_comp_B - avg_comp_A:+.2f} pts** |\n")
+        f.write(f"| **Factualidad (Calidad/1-5)** | {avg_fact_A:.2f} / 5.0 | {avg_fact_B:.2f} / 5.0 | **{avg_fact_B - avg_fact_A:+.2f} pts** |\n")
+        f.write(f"| **Completitud (Recall/1-5)** | {avg_comp_A:.2f} / 5.0 | {avg_comp_B:.2f} / 5.0 | **{avg_comp_B - avg_comp_A:+.2f} pts** |\n")
         f.write(f"| **Latencia Promedio (s)** | {avg_lat_A:.2f}s | {avg_lat_B:.2f}s | {avg_lat_B - avg_lat_A:+.2f}s (Costo de tiempo) |\n")
         f.write(f"| **Llamadas LLM Promedio** | {avg_calls_A:.1f} | {avg_calls_B:.1f} | {avg_calls_B - avg_calls_A:+.1f} llamadas (Costo tokens) |\n\n")
         
@@ -256,7 +277,7 @@ def generar_reporte(resultados: List[Dict[str, Any]]):
         for r in resultados:
             f.write(f"### Caso {r['id']}: {r['query']}\n")
             f.write(f"- **Tipo de Consulta**: {r['tipo']}\n")
-            f.write(f"- **Análisis del Juez LLM**:\n  > {r['analisis']}\n")
+            f.write(f"- **Análisis del Juez LLM** (Juez: **{JUDGE_MODEL}**):\n  > {r['analisis']}\n")
             f.write("- **Respuestas Generadas**:\n")
             f.write("  ```carousel\n")
             f.write("  ### Respuesta A: Baseline\n")

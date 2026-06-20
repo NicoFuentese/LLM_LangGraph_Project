@@ -13,6 +13,18 @@ if sys.platform.startswith("win"):
 from src.llm import llm
 from src.tools.rag_tool import buscar_en_kb
 
+def _get_content(respuesta) -> str:
+    """Extrae texto de la respuesta del LLM de forma segura."""
+    content = getattr(respuesta, "content", respuesta)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "".join(
+            part.get("text", "") if isinstance(part, dict) else getattr(part, "text", str(part))
+            for part in content
+        )
+    return str(content)
+
 def ejecutar_baseline(consulta: str) -> str:
     """Ejecuta una respuesta RAG de un solo paso sobre la base de conocimiento cargada."""
     # Recuperación simple de los primeros 3 chunks
@@ -35,7 +47,7 @@ Redacta tu respuesta en español:"""
 
     try:
         respuesta = llm.invoke(prompt)
-        return respuesta.content.strip()
+        return _get_content(respuesta).strip()
     except Exception as e:
         return f"Error en ejecución del Baseline: {str(e)}"
 
